@@ -1,0 +1,59 @@
+{
+  "name": "mjfk23/gadget-console",
+  "description": "Gadget library for console apps",
+  "type": "library",
+  "keywords": [],
+  "homepage": "https://github.com/mjfk23/gadget-console",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Melody Kimball",
+      "role": "lead"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/mjfk23/gadget-console/issues",
+    "wiki": "https://github.com/mjfk23/gadget-console/wiki",
+    "source": "https://github.com/mjfk23/gadget-console"
+  },
+  "require": {
+    "php": ">=8.1",
+    "mjfk23/gadget-core": "dev-main",
+    "mjfk23/gadget-log": "dev-main",
+    "symfony/console": "6.4.*",
+    "symfony/event-dispatcher": "6.4.*",
+    "symfony/process": "6.4.*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.12",
+    "phpstan/phpstan-strict-rules": "^1.6",
+    "phpstan/extension-installer": "^1.4",
+    "phpunit/phpunit": "^10.0",
+    "squizlabs/php_codesniffer": "^3.10",
+    "vimeo/psalm": "^5.26"
+  },
+  "autoload": {
+    "psr-4": {
+      "Gadget\\Console\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Gadget\\Console\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    },
+    "sort-packages": true,
+    "optimize-autoloader": true,
+    "apcu-autoloader": true
+  },
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs",
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
+    "psalm": "vendor/bin/psalm --no-cache",
+    "phpunit": "vendor/bin/phpunit"
+  }
+}
