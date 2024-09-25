@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6d3f123d8542cecf87bc8b8262e8191",
+    "content-hash": "0558fdc319c392db3ddee8d6fb040c26",
     "packages": [
         {
             "name": "mjfk23/gadget-core",
-            "version": "dev-main",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mjfk23/gadget-core.git",
-                "reference": "d5543dd8151f3051f665d1ab83a86aeb5991c220"
+                "reference": "779b8649d62d9e881598e548f42635b3bcac3228"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mjfk23/gadget-core/zipball/d5543dd8151f3051f665d1ab83a86aeb5991c220",
-                "reference": "d5543dd8151f3051f665d1ab83a86aeb5991c220",
+                "url": "https://api.github.com/repos/mjfk23/gadget-core/zipball/779b8649d62d9e881598e548f42635b3bcac3228",
+                "reference": "779b8649d62d9e881598e548f42635b3bcac3228",
                 "shasum": ""
             },
             "require": {
@@ -32,7 +32,6 @@
                 "squizlabs/php_codesniffer": "^3.10",
                 "vimeo/psalm": "^5.26"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -60,24 +59,24 @@
                 "source": "https://github.com/mjfk23/gadget-core",
                 "wiki": "https://github.com/mjfk23/gadget-core/wiki"
             },
-            "time": "2024-09-20T17:10:30+00:00"
+            "time": "2024-09-25T12:23:37+00:00"
         },
         {
             "name": "mjfk23/gadget-log",
-            "version": "dev-main",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mjfk23/gadget-log.git",
-                "reference": "02cc2bffb9092ec7a4e6f6724fa448b7d6fd75a6"
+                "reference": "bbe6f168d1b1ae5705200a78baecbb58e2e27113"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mjfk23/gadget-log/zipball/02cc2bffb9092ec7a4e6f6724fa448b7d6fd75a6",
-                "reference": "02cc2bffb9092ec7a4e6f6724fa448b7d6fd75a6",
+                "url": "https://api.github.com/repos/mjfk23/gadget-log/zipball/bbe6f168d1b1ae5705200a78baecbb58e2e27113",
+                "reference": "bbe6f168d1b1ae5705200a78baecbb58e2e27113",
                 "shasum": ""
             },
             "require": {
-                "mjfk23/gadget-core": "dev-main",
+                "mjfk23/gadget-core": "^1.0",
                 "monolog/monolog": "^3.7",
                 "php": ">=8.1",
                 "psr/log": "^3.0"
@@ -90,7 +89,6 @@
                 "squizlabs/php_codesniffer": "^3.10",
                 "vimeo/psalm": "^5.26"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -114,7 +112,7 @@
                 "source": "https://github.com/mjfk23/gadget-logging",
                 "wiki": "https://github.com/mjfk23/gadget-logging/wiki"
             },
-            "time": "2024-09-23T18:13:12+00:00"
+            "time": "2024-09-25T12:35:04+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -4305,10 +4303,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "mjfk23/gadget-core": 20,
-        "mjfk23/gadget-log": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
