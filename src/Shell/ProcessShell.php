@@ -29,27 +29,35 @@ final class ProcessShell
 
 
     /**
-     * @param string[] $input
+     * @param string[]|ProcessShellArgs $args
+     * @param string|resource|\Traversable<string>|null $input
      * @return array{int,Process}
      */
-    public function start(array $input): array
-    {
-        $process = new Process($input, $this->workDir, null, null, null);
-        $process->start($this->output(...), $this->env);
+    public function start(
+        array|ProcessShellArgs $args,
+        mixed $input = null
+    ): array {
+        $args = $args instanceof ProcessShellArgs ? $args->getArgs() : $args;
+        $process = new Process($args, $this->workDir, null, null, null);
+        $process
+            ->setInput($input)
+            ->start($this->output(...), $this->env);
         $pid = $process->getPid() ?? -1;
-        $this->outputStart($pid, $input);
+        $this->outputStart($pid, $args);
         return [$pid, $process];
     }
 
 
     /**
-     * @param array<string[]> $inputs
+     * @param array<string[]|ProcessShellArgs> $args
+     * @param array<string|resource|\Traversable<string>|null> $inputs
      * @param int $maxProcesses
      * @param float $waitInterval
      * @return int[]
      */
     public function startAll(
-        array $inputs,
+        array $args,
+        array $inputs = [],
         int $maxProcesses = 4,
         float $waitInterval = 0.01
     ): array {
@@ -64,7 +72,7 @@ final class ProcessShell
         }
 
         // While there's stuff to do
-        while (count($inputs) > 0 || count($processes) > 0) {
+        while (count($args) > 0 || count($processes) > 0) {
             $updatedQueue = false;
 
             // Remove processes from queue
@@ -82,8 +90,11 @@ final class ProcessShell
             }
 
             // Add processes to queue
-            while (count($inputs) > 0 && count($processes) < $maxProcesses) {
-                $processes[] = $this->start(array_shift($inputs));
+            while (count($args) > 0 && count($processes) < $maxProcesses) {
+                $processes[] = $this->start(
+                    array_shift($args),
+                    array_shift($inputs)
+                );
                 $updatedQueue = true;
             }
 
@@ -98,17 +109,19 @@ final class ProcessShell
 
 
     /**
-     * @param array<string[]> $inputs
+     * @param array<string[]|ProcessShellArgs> $args
+     * @param array<string|resource|\Traversable<string>|null> $inputs
      * @param bool $throwOnError
      * @return int[]
      */
     public function executeAll(
-        array $inputs,
+        array $args,
+        array $inputs = [],
         bool $throwOnError = true
     ): array {
         $exitCodes = [];
-        foreach ($inputs as $input) {
-            $exitCodes[] = $exitCode = $this->execute($input);
+        foreach ($args as $idx => $arg) {
+            $exitCodes[] = $exitCode = $this->execute($arg, $inputs[$idx] ?? null);
             if ($throwOnError && $exitCode !== 0) {
                 throw new ShellException(["Invalid exit code: %s", $exitCode]);
             }
@@ -118,12 +131,15 @@ final class ProcessShell
 
 
     /**
-     * @param string[] $input
+     * @param string[]|ProcessShellArgs $args
+     * @param string|resource|\Traversable<string>|null $input
      * @return int
      */
-    public function execute(array $input): int
-    {
-        list($pid, $process) = $this->start($input);
+    public function execute(
+        array|ProcessShellArgs $args,
+        mixed $input = null
+    ): int {
+        list($pid, $process) = $this->start($args, $input);
         $exitCode = $process->wait();
         $this->outputTerminate($pid, $exitCode, $process->getStartTime());
         return $exitCode;
@@ -147,17 +163,17 @@ final class ProcessShell
 
     /**
      * @param int $pid
-     * @param string[] $input
+     * @param string[]|ProcessShellArgs $args
      * @return void
      */
     private function outputStart(
         int $pid,
-        array $input
+        array|ProcessShellArgs $args
     ): void {
         $this->output('start', sprintf(
             "Process started: PID=>%s, Args=>%s",
             $pid,
-            JSON::encode($input)
+            JSON::encode($args)
         ));
     }
 
