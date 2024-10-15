@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Gadget\Console\Shell;
+namespace Gadget\Console\Exception;
 
 use Gadget\Lang\Exception;
 
