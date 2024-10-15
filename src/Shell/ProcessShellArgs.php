@@ -8,12 +8,19 @@ class ProcessShellArgs implements \Stringable
 {
     /**
      * @param string[] $args
-     * @param (callable(string $type, string $message): mixed)|null $output
      */
-    public function __construct(
-        private array $args = [],
-        private mixed $output = null
-    ) {
+    public function __construct(private array $args = [])
+    {
+    }
+
+
+    /**
+     * @param string[] $args
+     * @return void
+     */
+    public function setArgs(array $args): void
+    {
+        $this->args = $args;
     }
 
 
@@ -23,15 +30,6 @@ class ProcessShellArgs implements \Stringable
     public function getArgs(): array
     {
         return $this->args;
-    }
-
-
-    /**
-     * @return (callable(string $type, string $message): mixed)
-     */
-    public function getOutput(): callable
-    {
-        return $this->output ?? fn(string $type, string $message): mixed => 0;
     }
 
 
