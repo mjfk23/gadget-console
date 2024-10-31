@@ -14,11 +14,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class ShellCommand extends Command
 {
+    /**
+     * @param ProcessShellEnv $shellEnv
+     * @param bool $throwOnError
+     * @param string|null $name
+     */
     public function __construct(
-        protected ProcessShellEnv|null $env = null,
-        protected ProcessShellInput|null $input = null,
-        protected ProcessShellOutput|null $output = null,
-        protected bool $trimOutput = false,
+        protected ProcessShellEnv $shellEnv,
+        protected bool $throwOnError = true,
         string|null $name = null
     ) {
         parent::__construct($name);
@@ -30,75 +33,55 @@ abstract class ShellCommand extends Command
         InputInterface $input,
         OutputInterface $output
     ): int {
-        $this
-            ->getShell($input, $output)
-            ->executeAll(array_map(
-                fn(ProcessShellArgs|array $args) => is_array($args) ? new ProcessShellArgs($args) : $args,
-                $this->getArgs($input, $output)
-            ));
+        $this->getShell()->executeAll(
+            $this->getShellCommands(
+                $this->getShellInput(),
+                $this->getShellOutput($output),
+                $this->getShellArgs($input)
+            ),
+            $this->throwOnError
+        );
 
         return self::SUCCESS;
     }
 
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return ProcessShell
      */
-    protected function getShell(
-        InputInterface $input,
-        OutputInterface $output
-    ): ProcessShell {
-        return new ProcessShell(
-            $this->getEnv($input, $output),
-            $this->getInput($input, $output),
-            $this->getOutput($input, $output)
-        );
+    protected function getShell(): ProcessShell
+    {
+        return new ProcessShell($this->getShellEnv());
     }
 
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return ProcessShellEnv
      */
-    protected function getEnv(
-        InputInterface $input,
-        OutputInterface $output
-    ): ProcessShellEnv {
-        return $this->env ?? new ProcessShellEnv();
+    protected function getShellEnv(): ProcessShellEnv
+    {
+        return $this->shellEnv;
     }
 
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return ProcessShellInput
      */
-    protected function getInput(
-        InputInterface $input,
-        OutputInterface $output
-    ): ProcessShellInput {
-        return $this->input ?? new ProcessShellInput();
+    protected function getShellInput(): ProcessShellInput
+    {
+        return new ProcessShellInput();
     }
 
 
     /**
-     * @param InputInterface $input
      * @param OutputInterface $output
      * @return ProcessShellOutput
      */
-    protected function getOutput(
-        InputInterface $input,
-        OutputInterface $output
-    ): ProcessShellOutput {
-        return $this->output ?? new ProcessShellOutput(function (string $type, string $message) use ($output): void {
-            if ($this->trimOutput === true) {
-                $message = trim($message);
-            }
-
+    protected function getShellOutput(OutputInterface $output): ProcessShellOutput
+    {
+        return new ProcessShellOutput(function (string $type, string $message) use ($output): void {
             $output->writeln($message);
+
             if ($type === ProcessShell::ERR) {
                 $this->error($message);
             } else {
@@ -109,12 +92,30 @@ abstract class ShellCommand extends Command
 
 
     /**
+     * @param ProcessShellInput $shellInput
+     * @param ProcessShellOutput $shellOutput
+     * @param (ProcessShellArgs|string[])[] $shellArgs
+     * @return array{ProcessShellArgs,ProcessShellInput,ProcessShellOutput}[]
+     */
+    protected function getShellCommands(
+        ProcessShellInput $shellInput,
+        ProcessShellOutput $shellOutput,
+        array $shellArgs
+    ): array {
+        return array_map(
+            fn(ProcessShellArgs|array $args): array => [
+                is_array($args) ? new ProcessShellArgs($args) : $args,
+                $shellInput,
+                $shellOutput
+            ],
+            $shellArgs
+        );
+    }
+
+
+    /**
      * @param InputInterface $input
-     * @param OutputInterface $output
      * @return (ProcessShellArgs|string[])[]
      */
-    abstract protected function getArgs(
-        InputInterface $input,
-        OutputInterface $output
-    ): array;
+    abstract protected function getShellArgs(InputInterface $input): array;
 }

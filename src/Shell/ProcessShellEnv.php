@@ -6,14 +6,23 @@ namespace Gadget\Console\Shell;
 
 class ProcessShellEnv
 {
+    /** @var string $workDir */
+    private string $workDir;
+
+    /** @var string[] $env */
+    private array $env;
+
+
     /**
-     * @param string[] $env
-     * @param string|null $workDir
+     * @param string $workDir
+     * @param mixed[] $env
      */
     public function __construct(
-        private array $env = [],
-        private string|null $workDir = null
+        string $workDir = '.',
+        array $env = []
     ) {
+        $this->setWorkDir($workDir);
+        $this->setEnv($env);
     }
 
 
@@ -27,10 +36,39 @@ class ProcessShellEnv
 
 
     /**
+     * @param mixed[] $env,
+     * @param bool $includeGlobal
+     * @return static
+     */
+    public function setEnv(
+        array $env,
+        bool $includeGlobal = true
+    ): static {
+        $this->env = array_filter(array_map(
+            fn(mixed $v) => is_scalar($v) || (is_object($v) && $v instanceof \Stringable) ? strval($v) : null,
+            $includeGlobal ? array_merge($_ENV, $_SERVER, $env) : $env
+        ));
+
+        return $this;
+    }
+
+
+    /**
      * @return string
      */
-    public function getWorkDir(): string|null
+    public function getWorkDir(): string
     {
         return $this->workDir;
+    }
+
+
+    /**
+     * @param string $workDir
+     * @return static
+     */
+    public function setWorkDir(string $workDir): static
+    {
+        $this->workDir = $workDir;
+        return $this;
     }
 }

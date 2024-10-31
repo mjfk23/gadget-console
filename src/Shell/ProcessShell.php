@@ -14,93 +14,61 @@ class ProcessShell
 
 
     /**
-     * @param ProcessShellEnv|null $env
-     * @param ProcessShellInput|null $input
-     * @param ProcessShellOutput|null $output
+     * @param ProcessShellEnv $env
      */
-    public function __construct(
-        private ProcessShellEnv|null $env = null,
-        private ProcessShellInput|null $input = null,
-        private ProcessShellOutput|null $output = null
-    ) {
+    public function __construct(private ProcessShellEnv $env)
+    {
     }
 
 
     /**
      * @param ProcessShellArgs $args
-     * @param ProcessShellEnv|null $env
-     * @param ProcessShellInput|null $input
-     * @param ProcessShellOutput|null $output
-     * @return array{ProcessShellArgs,ProcessShellEnv,ProcessShellInput,ProcessShellOutput}
+     * @return Process
      */
-    protected function init(
-        ProcessShellArgs $args,
-        ProcessShellEnv|null $env = null,
-        ProcessShellInput|null $input = null,
-        ProcessShellOutput|null $output = null
-    ): array {
-        return [
-            $args,
-            $env ?? $this->env ?? new ProcessShellEnv(),
-            $input ?? $this->input ?? new ProcessShellInput(),
-            $output ?? $this->output ?? new ProcessShellOutput()
-        ];
+    public function create(ProcessShellArgs $args): Process
+    {
+        return new Process(
+            command: $args->getArgs(),
+            cwd: $this->env->getWorkDir(),
+            env: $this->env->getEnv()
+        );
     }
-
 
 
     /**
      * @param ProcessShellArgs $args
-     * @param ProcessShellEnv|null $env
-     * @param ProcessShellInput|null $input
-     * @param ProcessShellOutput|null $output
-     * @return array{int,Process,ProcessShellArgs,ProcessShellEnv,ProcessShellInput,ProcessShellOutput}
+     * @param ProcessShellInput $input
+     * @param ProcessShellOutput $output
+     * @return Process
      */
     public function start(
         ProcessShellArgs $args,
-        ProcessShellEnv|null $env = null,
-        ProcessShellInput|null $input = null,
-        ProcessShellOutput|null $output = null
-    ): array {
-        list($args, $env, $input, $output) = $this->init($args, $env, $input, $output);
+        ProcessShellInput $input,
+        ProcessShellOutput $output
+    ): Process {
+        $process = $this
+            ->create($args)
+            ->setInput($input->getInput());
 
-        $process = new Process(
-            command: $args->getArgs(),
-            cwd: $env->getWorkDir(),
-            env: null,
-            input: null,
-            timeout: null
-        );
+        $process->start($output);
 
-        $process
-            ->setInput($input->getInput())
-            ->start($output, $env->getEnv());
-
-        $pid = $process->getPid() ?? -1;
-
-        return [$pid, $process, $args, $env, $input, $output];
+        return $process;
     }
 
 
     /**
-     * @param ProcessShellArgs[] $args
-     * @param ProcessShellEnv[] $envs
-     * @param ProcessShellInput[] $inputs
-     * @param ProcessShellOutput[] $outputs
+     * @param array{ProcessShellArgs,ProcessShellInput,ProcessShellOutput}[] $args
      * @param int $maxProcesses
      * @param float $waitInterval
      * @return int[]
      */
     public function startAll(
         array $args,
-        array $envs = [],
-        array $inputs = [],
-        array $outputs = [],
         int $maxProcesses = 4,
         float $waitInterval = 0.01
     ): array {
         /**
-         * @var array{int,Process,ProcessShellArgs,ProcessShellEnv,ProcessShellInput,ProcessShellOutput}[] $processes
+         * @var Process[] $processes
          */
         $processes = [];
 
@@ -117,7 +85,7 @@ class ProcessShell
             $updatedQueue = false;
 
             // Remove processes from queue
-            foreach ($processes as $idx => list($pid, $process,,,, $output)) {
+            foreach ($processes as $idx => $process) {
                 if ($process->isTerminated()) {
                     $exitCodes[$idx] = $process->getExitCode() ?? 0;
                     $updatedQueue = true;
@@ -127,13 +95,7 @@ class ProcessShell
 
             // Add processes to queue
             while (count($args) > 0 && count($processes) < $maxProcesses) {
-                $processes[] = $this->start(
-                    array_shift($args),
-                    array_shift($envs),
-                    array_shift($inputs),
-                    array_shift($outputs)
-                );
-
+                $processes[] = $this->start(...array_shift($args));
                 $updatedQueue = true;
             }
 
@@ -149,46 +111,33 @@ class ProcessShell
 
     /**
      * @param ProcessShellArgs $args
-     * @param ProcessShellEnv|null $env
-     * @param ProcessShellInput|null $input
-     * @param ProcessShellOutput|null $output
+     * @param ProcessShellInput $input
+     * @param ProcessShellOutput $output
      * @return int
      */
     public function execute(
         ProcessShellArgs $args,
-        ProcessShellEnv|null $env = null,
-        ProcessShellInput|null $input = null,
-        ProcessShellOutput|null $output = null
+        ProcessShellInput $input,
+        ProcessShellOutput $output
     ): int {
-        list($pid, $process,,,, $output) = $this->start($args, $env, $input, $output);
+        $process = $this->start($args, $input, $output);
         $exitCode = $process->wait();
         return $exitCode;
     }
 
 
     /**
-     * @param ProcessShellArgs[] $args
-     * @param ProcessShellEnv[] $envs
-     * @param ProcessShellInput[] $inputs
-     * @param ProcessShellOutput[] $outputs
+     * @param array{ProcessShellArgs,ProcessShellInput,ProcessShellOutput}[] $args
      * @param bool $throwOnError
      * @return int[]
      */
     public function executeAll(
         array $args,
-        array $envs = [],
-        array $inputs = [],
-        array $outputs = [],
         bool $throwOnError = true
     ): array {
         $exitCodes = [];
-        foreach ($args as $idx => $arg) {
-            $exitCodes[] = $exitCode = $this->execute(
-                $arg,
-                $envs[$idx] ?? null,
-                $inputs[$idx] ?? null,
-                $outputs[$idx] ?? null
-            );
+        foreach ($args as $arg) {
+            $exitCodes[] = $exitCode = $this->execute(...$arg);
             if ($throwOnError && $exitCode !== 0) {
                 throw new ShellException(["Invalid exit code: %s", $exitCode]);
             }

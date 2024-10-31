@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Gadget\Console\Shell;
 
-use Gadget\Io\JSON;
-
 class ProcessShellOutput
 {
     /**
@@ -25,19 +23,64 @@ class ProcessShellOutput
 
     /**
      * @param (callable(string $type, string $message): mixed)|null $output
+     * @param bool $trimOutput
      */
-    public function __construct(private mixed $output = null)
+    public function __construct(
+        private mixed $output = null,
+        private bool $trimOutput = true
+    ) {
+    }
+
+
+    public function getOutput(): callable
     {
-        $this->output ??= fn(string $type, string $message): mixed => 0;
+        return is_callable($this->output)
+            ? $this->output
+            : throw new \RuntimeException();
     }
 
 
     /**
-     * @param (callable(string $type, string $message): mixed)|null $output
+     * @param (callable(string $type, string $message): mixed) $output
+     * @return static
      */
-    public function setOutput(callable|null $output = null): void
+    public function setOutput(callable $output): static
     {
         $this->output = $output;
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function getTrimOutput(): bool
+    {
+        return $this->trimOutput;
+    }
+
+
+    /**
+     * @param bool $trimOutput
+     * @return static
+     */
+    public function setTrimOutput(bool $trimOutput): static
+    {
+        $this->trimOutput = $trimOutput;
+        return $this;
+    }
+
+
+    /**
+     * @param string $type
+     * @param string $message
+     * @return array{string,string}
+     */
+    protected function formatOutput(
+        string $type,
+        string $message
+    ): array {
+        return [$type, $this->trimOutput ? trim($message) : $message];
     }
 
 
@@ -50,6 +93,6 @@ class ProcessShellOutput
         string $type,
         string $message
     ): mixed {
-        return ($this->output ?? fn(string $type, string $message): mixed => 0)($type, $message);
+        return ($this->getOutput())(...$this->formatOutput($type, $message));
     }
 }
