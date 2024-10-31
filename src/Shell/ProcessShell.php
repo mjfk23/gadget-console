@@ -9,8 +9,6 @@ use Symfony\Component\Process\Process;
 
 class ProcessShell
 {
-    public const START = 'start';
-    public const TERMINATE = 'terminate';
     public const OUT = 'out';
     public const ERR = 'err';
 
@@ -79,7 +77,6 @@ class ProcessShell
             ->start($output, $env->getEnv());
 
         $pid = $process->getPid() ?? -1;
-        $output->start($pid, $args);
 
         return [$pid, $process, $args, $env, $input, $output];
     }
@@ -124,12 +121,6 @@ class ProcessShell
                 if ($process->isTerminated()) {
                     $exitCodes[$idx] = $process->getExitCode() ?? 0;
                     $updatedQueue = true;
-
-                    $output->terminate(
-                        $pid,
-                        $exitCodes[$idx],
-                        $process->getStartTime()
-                    );
                     unset($processes[$idx]);
                 }
             }
@@ -171,7 +162,6 @@ class ProcessShell
     ): int {
         list($pid, $process,,,, $output) = $this->start($args, $env, $input, $output);
         $exitCode = $process->wait();
-        $output->terminate($pid, $exitCode, $process->getStartTime());
         return $exitCode;
     }
 
