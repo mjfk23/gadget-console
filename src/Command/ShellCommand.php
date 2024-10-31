@@ -18,6 +18,7 @@ abstract class ShellCommand extends Command
         protected ProcessShellEnv|null $env = null,
         protected ProcessShellInput|null $input = null,
         protected ProcessShellOutput|null $output = null,
+        protected bool $trimOutput = false,
         string|null $name = null
     ) {
         parent::__construct($name);
@@ -31,7 +32,10 @@ abstract class ShellCommand extends Command
     ): int {
         $this
             ->getShell($input, $output)
-            ->executeAll($this->getArgs($input, $output));
+            ->executeAll(array_map(
+                fn(ProcessShellArgs|array $args) => is_array($args) ? new ProcessShellArgs($args) : $args,
+                $this->getArgs($input, $output)
+            ));
 
         return self::SUCCESS;
     }
@@ -90,9 +94,15 @@ abstract class ShellCommand extends Command
         OutputInterface $output
     ): ProcessShellOutput {
         return $this->output ?? new ProcessShellOutput(function (string $type, string $message) use ($output): void {
-            $message = trim($message);
-            if ($type !== ProcessShell::START && $type !== ProcessShell::TERMINATE) {
-                $output->writeln($message);
+            if ($this->trimOutput === true) {
+                $message = trim($message);
+            }
+
+            $output->writeln($message);
+            if ($type === ProcessShell::ERR) {
+                $this->error($message);
+            } else {
+                $this->info($message);
             }
         });
     }
@@ -101,7 +111,7 @@ abstract class ShellCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return ProcessShellArgs[]
+     * @return (ProcessShellArgs|string[])[]
      */
     abstract protected function getArgs(
         InputInterface $input,
