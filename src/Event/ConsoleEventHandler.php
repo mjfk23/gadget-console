@@ -52,24 +52,21 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
+        $hasEvents = !$this->eventStack->empty();
         $commandName = $event->getCommand()?->getName() ?? null;
-
         if (is_string($commandName)) {
-            $this->info(sprintf(
-                "Command started: Name=>%s, Args=>%s",
-                $commandName,
-                JSON::encode(array_merge(
-                    $event->getInput()->getArguments(),
-                    $event->getInput()->getOptions()
-                ))
-            ));
-
             $this->eventStack->push([$commandName, (new Timer())->start()]);
         } else {
             $this->eventStack->push(null);
         }
 
+        if ($hasEvents) {
+            $this->logCommandStarted($event, $commandName, $hasEvents);
+        }
         $this->processor->commandName = $commandName;
+        if (!$hasEvents) {
+            $this->logCommandStarted($event, $commandName, $hasEvents);
+        }
     }
 
 
@@ -92,15 +89,86 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function onConsoleTerminate(ConsoleTerminateEvent $event): void
     {
-        list($commandName, $timer) = $this->eventStack->pop() ?? [null, null];
-        list($this->processor->commandName,) = $this->eventStack->peek() ?? [null, null];
+        list($prevCommand, $prevTimer) = $this->eventStack->pop() ?? [null, null];
+        list($currCommand, ) = $this->eventStack->peek() ?? [null, null];
+        $hasEvents = !$this->eventStack->empty();
+
+        if (!$hasEvents) {
+            $this->logCommandTerminated($event, $prevCommand, $prevTimer, $hasEvents);
+        }
+        $this->processor->commandName = $currCommand;
+        if ($hasEvents) {
+            $this->logCommandTerminated($event, $prevCommand, $prevTimer, $hasEvents);
+        }
+    }
+
+
+    /**
+     * @param ConsoleCommandEvent $event
+     * @param string|null $commandName
+     * @param bool $hasEvents
+     * @return void
+     */
+    private function logCommandStarted(
+        ConsoleCommandEvent $event,
+        string|null $commandName,
+        bool $hasEvents
+    ): void {
+        if (is_string($commandName)) {
+            $args = JSON::encode(array_filter(array_merge(
+                $event->getInput()->getArguments(),
+                $event->getInput()->getOptions(),
+                [
+                    "command" => null,
+                    "help" => null,
+                    "quiet" => null,
+                    "verbose" => null,
+                    "version" => null,
+                    "ansi" => null,
+                    "no-interaction" => null,
+                    "env" => null,
+                    "no-debug" => null,
+                    "profile" => null
+                ]
+            )));
+
+            if ($hasEvents) {
+                $this->info(sprintf("Command started: Name=>%s, Args=>%s", $commandName, $args));
+            } else {
+                $this->info(sprintf("Started: %s", $args));
+            }
+        }
+    }
+
+
+    /**
+     * @param ConsoleTerminateEvent $event
+     * @param string|null $commandName
+     * @param Timer|null $timer
+     * @param bool $hasEvents
+     * @return void
+     */
+    private function logCommandTerminated(
+        ConsoleTerminateEvent $event,
+        string|null $commandName,
+        Timer|null $timer,
+        bool $hasEvents
+    ): void {
         if ($commandName !== null && $timer !== null) {
-            $this->info(sprintf(
-                "Command terminated: Name=>%s, Code=>%d, Elapsed=>%s",
-                $commandName,
-                $event->getExitCode(),
-                $timer->getElapsed()
-            ));
+            if ($hasEvents) {
+                $this->info(sprintf(
+                    "Command terminated: Name=>%s, Code=>%d, Elapsed=>%s",
+                    $commandName,
+                    $event->getExitCode(),
+                    $timer->getElapsed()
+                ));
+            } else {
+                $this->info(sprintf(
+                    "Terminated: Code=>%d, Elapsed=>%s",
+                    $event->getExitCode(),
+                    $timer->getElapsed()
+                ));
+            }
         }
     }
 }
