@@ -30,7 +30,8 @@ class ProcessShell
         return new Process(
             command: $args->getArgs(),
             cwd: $this->env->getWorkDir(),
-            env: $this->env->getEnv()
+            env: $this->env->getEnv(),
+            timeout: null
         );
     }
 
