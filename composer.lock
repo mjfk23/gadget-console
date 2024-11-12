@@ -66,16 +66,16 @@
         },
         {
             "name": "mjfk23/gadget-log",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mjfk23/gadget-log.git",
-                "reference": "c24e0da8fcb650550df7ffd6c035ef833b893843"
+                "reference": "4cdaaa853e117123cd82ff7bc1bcf23a7ba7c807"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mjfk23/gadget-log/zipball/c24e0da8fcb650550df7ffd6c035ef833b893843",
-                "reference": "c24e0da8fcb650550df7ffd6c035ef833b893843",
+                "url": "https://api.github.com/repos/mjfk23/gadget-log/zipball/4cdaaa853e117123cd82ff7bc1bcf23a7ba7c807",
+                "reference": "4cdaaa853e117123cd82ff7bc1bcf23a7ba7c807",
                 "shasum": ""
             },
             "require": {
@@ -88,9 +88,7 @@
                 "phpstan/extension-installer": "^1.4",
                 "phpstan/phpstan": "^1.12",
                 "phpstan/phpstan-strict-rules": "^1.6",
-                "phpunit/phpunit": "^10.0",
-                "squizlabs/php_codesniffer": "^3.10",
-                "vimeo/psalm": "^5.26"
+                "squizlabs/php_codesniffer": "^3.10"
             },
             "type": "library",
             "autoload": {
@@ -115,7 +113,7 @@
                 "source": "https://github.com/mjfk23/gadget-logging",
                 "wiki": "https://github.com/mjfk23/gadget-logging/wiki"
             },
-            "time": "2024-10-07T18:43:36+00:00"
+            "time": "2024-11-12T11:49:32+00:00"
         },
         {
             "name": "monolog/monolog",
