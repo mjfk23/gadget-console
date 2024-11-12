@@ -42,7 +42,9 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function __construct(private ConsoleCommandProcessor $processor)
     {
-        $this->eventStack = new Stack();
+        /** @var Stack<array{string,Timer}|null> $eventStack */
+        $eventStack = new Stack();
+        $this->eventStack = $eventStack;
     }
 
 
