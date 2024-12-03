@@ -8,5 +8,6 @@
 
     <arg name="basepath" value="."/>
     <arg name="extensions" value="php"/>
+    <file>bundle</file>
     <file>src</file>
 </ruleset>

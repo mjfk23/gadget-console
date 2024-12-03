@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Gadget\Console\Event;
 
+use Gadget\Exception\StackTraceIterator;
 use Gadget\Io\JSON;
-use Gadget\Lang\StackTrace;
 use Gadget\Log\LoggerProxyInterface;
 use Gadget\Log\LoggerProxyTrait;
 use Gadget\Log\Monolog\Processor\ConsoleCommandProcessor;
-use Gadget\Time\Timer;
-use Gadget\Util\Stack;
+use Gadget\Util\Timer;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
@@ -33,8 +32,8 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
     }
 
 
-    /** @var Stack<array{string,Timer}|null> $eventStack */
-    private Stack $eventStack;
+    /** @var list<array{string,Timer}|null> $eventStack */
+    private array $eventStack = [];
 
 
     /**
@@ -42,9 +41,6 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function __construct(private ConsoleCommandProcessor $processor)
     {
-        /** @var Stack<array{string,Timer}|null> $eventStack */
-        $eventStack = new Stack();
-        $this->eventStack = $eventStack;
     }
 
 
@@ -54,13 +50,12 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
-        $hasEvents = !$this->eventStack->empty();
+        $hasEvents = count($this->eventStack) > 0;
         $commandName = $event->getCommand()?->getName() ?? null;
-        if (is_string($commandName)) {
-            $this->eventStack->push([$commandName, (new Timer())->start()]);
-        } else {
-            $this->eventStack->push(null);
-        }
+        array_unshift(
+            $this->eventStack,
+            is_string($commandName) ? [$commandName, (new Timer())->start()] : null
+        );
 
         if ($hasEvents) {
             $this->logCommandStarted($event, $commandName, $hasEvents);
@@ -78,7 +73,7 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function onConsoleError(ConsoleErrorEvent $event): void
     {
-        $stackTrace = new StackTrace($event->getError());
+        $stackTrace = new StackTraceIterator($event->getError());
         foreach ($stackTrace as $l) {
             $this->error($l);
         }
@@ -91,9 +86,9 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
      */
     public function onConsoleTerminate(ConsoleTerminateEvent $event): void
     {
-        list($prevCommand, $prevTimer) = $this->eventStack->pop() ?? [null, null];
-        list($currCommand, ) = $this->eventStack->peek() ?? [null, null];
-        $hasEvents = !$this->eventStack->empty();
+        list($prevCommand, $prevTimer) = array_shift($this->eventStack) ?? [null, null];
+        list($currCommand, ) = $this->eventStack[0] ?? [null, null];
+        $hasEvents = count($this->eventStack) > 0;
 
         if (!$hasEvents) {
             $this->logCommandTerminated($event, $prevCommand, $prevTimer, $hasEvents);
@@ -117,22 +112,27 @@ class ConsoleEventHandler implements EventSubscriberInterface, LoggerProxyInterf
         bool $hasEvents
     ): void {
         if (is_string($commandName)) {
-            $args = JSON::encode(array_filter(array_merge(
-                $event->getInput()->getArguments(),
-                $event->getInput()->getOptions(),
-                [
-                    "command" => null,
-                    "help" => null,
-                    "quiet" => null,
-                    "verbose" => null,
-                    "version" => null,
-                    "ansi" => null,
-                    "no-interaction" => null,
-                    "env" => null,
-                    "no-debug" => null,
-                    "profile" => null
-                ]
-            )));
+            $args = JSON::encode(
+                array_filter(
+                    array_merge(
+                        $event->getInput()->getArguments(),
+                        $event->getInput()->getOptions(),
+                        [
+                            "command" => null,
+                            "help" => null,
+                            "quiet" => null,
+                            "verbose" => null,
+                            "version" => null,
+                            "ansi" => null,
+                            "no-interaction" => null,
+                            "env" => null,
+                            "no-debug" => null,
+                            "profile" => null
+                        ]
+                    ),
+                    fn($v) => $v !== null
+                )
+            );
 
             if ($hasEvents) {
                 $this->info(sprintf("Command started: Name=>%s, Args=>%s", $commandName, $args));

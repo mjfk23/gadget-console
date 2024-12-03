@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Gadget\Console\Command;
 
-use Gadget\Console\Shell\ProcessShell;
-use Gadget\Console\Shell\ProcessShellArgs;
-use Gadget\Console\Shell\ProcessShellEnv;
-use Gadget\Console\Shell\ProcessShellInput;
-use Gadget\Console\Shell\ProcessShellOutput;
+use Gadget\Process\ProcessShell;
+use Gadget\Process\ProcessShellArgs;
+use Gadget\Process\ProcessShellEnv;
+use Gadget\Process\ProcessShellInput;
+use Gadget\Process\ProcessShellOutput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

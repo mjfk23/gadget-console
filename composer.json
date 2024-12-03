@@ -17,29 +17,25 @@
     "source": "https://github.com/mjfk23/gadget-console"
   },
   "require": {
-    "php": ">=8.1",
-    "mjfk23/gadget-core": "^1.0",
-    "mjfk23/gadget-log": "^1.0",
+    "php": "^8.1",
+    "mjfk23/gadget-core": "^2.0",
+    "mjfk23/gadget-log": "^2.0",
+    "mjfk23/gadget-process": "^1.0",
     "symfony/console": "6.4.*",
-    "symfony/event-dispatcher": "6.4.*",
-    "symfony/process": "6.4.*"
+    "symfony/event-dispatcher": "6.4.*"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.12",
-    "phpstan/phpstan-strict-rules": "^1.6",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
     "phpstan/extension-installer": "^1.4",
-    "phpunit/phpunit": "^10.0",
-    "squizlabs/php_codesniffer": "^3.10",
-    "vimeo/psalm": "^5.26"
+    "squizlabs/php_codesniffer": "^3.10"
   },
   "autoload": {
     "psr-4": {
-      "Gadget\\Console\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Gadget\\Console\\Tests\\": "tests/"
+      "Gadget\\Console\\": [
+        "src/",
+        "bundle/"
+      ]
     }
   },
   "config": {
@@ -52,8 +48,6 @@
   },
   "scripts": {
     "phpcs": "vendor/bin/phpcs",
-    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
-    "psalm": "vendor/bin/psalm --no-cache",
-    "phpunit": "vendor/bin/phpunit"
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon"
   }
 }
