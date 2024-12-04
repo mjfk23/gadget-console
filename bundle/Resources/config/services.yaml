@@ -5,6 +5,3 @@ services:
 
   Gadget\Console\:
     resource: '../../../src/'
-
-  Gadget\Process\ProcessShellEnv:
-    autowire: true
