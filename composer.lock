@@ -116,16 +116,16 @@
         },
         {
             "name": "mjfk23/gadget-process",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mjfk23/gadget-process.git",
-                "reference": "5b79fb24e4748158dafaacc7f7d935a683e835a8"
+                "reference": "e8c26bbe4e00defbb2fd6c46d379a5422a896076"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mjfk23/gadget-process/zipball/5b79fb24e4748158dafaacc7f7d935a683e835a8",
-                "reference": "5b79fb24e4748158dafaacc7f7d935a683e835a8",
+                "url": "https://api.github.com/repos/mjfk23/gadget-process/zipball/e8c26bbe4e00defbb2fd6c46d379a5422a896076",
+                "reference": "e8c26bbe4e00defbb2fd6c46d379a5422a896076",
                 "shasum": ""
             },
             "require": {
@@ -143,7 +143,10 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Gadget\\Process\\": "src/"
+                    "Gadget\\Process\\": [
+                        "src/",
+                        "bundle/"
+                    ]
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -163,7 +166,7 @@
                 "source": "https://github.com/mjfk23/gadget-process",
                 "wiki": "https://github.com/mjfk23/gadget-process/wiki"
             },
-            "time": "2024-12-04T19:25:07+00:00"
+            "time": "2024-12-04T19:31:46+00:00"
         },
         {
             "name": "mjfk23/symfony-bundle",
